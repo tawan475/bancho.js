@@ -153,7 +153,7 @@ module.exports = class banchoClient extends EventEmitter {
                 // :cho.ppy.sh 403 tawan475 #mp_98943277 :No such channel #mp_98943277
                 if (message.type === '403') {
                     message.args.shift(); // our name, this._username
-                    message.channel = messaage.args.shift();
+                    message.channel = message.args.shift();
                     // remove the first ":"
                     message.args[0] = message.args[0].substring(1);
                     this.emit('lobbyJoined', message.channel, new Error("No such channel."));
