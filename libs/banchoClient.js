@@ -129,7 +129,7 @@ module.exports = class banchoClient extends EventEmitter {
                     // remove the first ":"
                     message.args[0] = message.args[0].substring(1);
                     message.content = message.args.join(' ');
-                    if (message.args[0] === this._username) {
+                    if (message.channel === this._username) {
                         this.emit('pm', message);
                         continue;
                     }
