@@ -16,7 +16,7 @@ module.exports = class banchoClient extends EventEmitter {
         this._config.host = config.host || 'irc.ppy.sh';
         this._config.port = config.port || 6667;
 
-        this._server = { 
+        this._server = {
             host: this._config.host,
             port: this._config.port
         };
@@ -86,7 +86,7 @@ module.exports = class banchoClient extends EventEmitter {
                     args: segment.slice(2),
                     raw: line
                 };
-                
+
                 // 332 multiplayer id
                 // 333 unix server time
                 // 353 prob userlist
@@ -196,6 +196,13 @@ module.exports = class banchoClient extends EventEmitter {
     // Terminate the connection
     disconnect() {
         this._socket.emit('close', false, "Terminate by user");
+    }
+
+    // Send a message to a channel
+    say(channel, message) {
+        if (!channel) throw new Error("Channel is required.");
+        if (!message) throw new Error("Message is required.");
+        this.send(`PRIVMSG ${channel} :${message}`);
     }
 
     // Add a message to the queue
