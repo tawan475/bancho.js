@@ -56,6 +56,7 @@ module.exports = class banchoClient extends EventEmitter {
         // Configure events
         // Handle error
         this._socket.on('error', (err) => {
+            this._socket.destroy();
             this.emit('error', err);
         });
 
@@ -85,10 +86,24 @@ module.exports = class banchoClient extends EventEmitter {
                     args: segment.slice(2),
                     raw: line
                 };
+                
+                // 332 multiplayer id
+                // 333 unix server time
+                // 353 prob userlist
+                // 366 end of list
+                // 372 motd
+                // 376 end of motd
+                // 464 bad auth
+
                 if (message.type === 'QUIT') continue;
                 if (message.source === 'PING') {
                     this.send('PONG ' + segment.slice(1).join(' '));
                     continue;
+                }
+
+                if (message.type === '464') {
+                    this._socket.destroy();
+                    this.emit('error', new Error("Bad auth."));
                 }
 
                 if (message.type === '001') {
@@ -166,8 +181,7 @@ module.exports = class banchoClient extends EventEmitter {
     }
 
     // Terminate the connection
-    close() {
-        this._socket.destroy();
+    disconnect() {
         this._socket.emit('close', false, "Terminate by user");
     }
 
