@@ -1,0 +1,27 @@
+{
+  "name": "banchojs",
+  "version": "0.0.1",
+  "description": "Interact with osu!'s IRC bancho",
+  "main": "bancho.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tawan475/banchojs.git"
+  },
+  "keywords": [
+    "osu",
+    "bancho",
+    "IRC",
+    "banchobot",
+    "osu!",
+    "osuIRC"
+  ],
+  "author": "tawan475",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tawan475/banchojs/issues"
+  },
+  "homepage": "https://github.com/tawan475/banchojs#readme"
+}
