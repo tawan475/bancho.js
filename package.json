@@ -1,5 +1,5 @@
 {
-  "name": "banchojs",
+  "name": "@tawan475/bancho.js",
   "version": "0.0.1",
   "description": "Interact with osu!'s IRC bancho",
   "main": "bancho.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tawan475/banchojs.git"
+    "url": "git+https://github.com/tawan475/bancho.js.git"
   },
   "keywords": [
     "osu",
@@ -21,7 +21,7 @@
   "author": "tawan475",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tawan475/banchojs/issues"
+    "url": "https://github.com/tawan475/bancho.js/issues"
   },
-  "homepage": "https://github.com/tawan475/banchojs#readme"
+  "homepage": "https://github.com/tawan475/bancho.js#readme"
 }
