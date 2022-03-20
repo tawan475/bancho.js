@@ -93,6 +93,7 @@ module.exports = class banchoClient extends EventEmitter {
                 // 366 end of list
                 // 372 motd
                 // 376 end of motd
+                // 403 no such channel
                 // 464 bad auth
 
                 if (message.type === 'QUIT') continue;
@@ -144,6 +145,18 @@ module.exports = class banchoClient extends EventEmitter {
                         this.emit('spectator', message);
                         continue
                     }
+                    continue;
+                }
+
+                // example
+                //   author   type   args ----
+                // :cho.ppy.sh 403 tawan475 #mp_98943277 :No such channel #mp_98943277
+                if (message.type === '403') {
+                    message.args.shift(); // our name, this._username
+                    message.channel = messaage.args.shift();
+                    // remove the first ":"
+                    message.args[0] = message.args[0].substring(1);
+                    this.emit('lobbyJoined', message.channel, new Error("No such channel."));
                     continue;
                 }
 
