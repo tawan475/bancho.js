@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/tawan475/bancho.js/issues"
   },
-  "homepage": "https://github.com/tawan475/bancho.js#readme"
+  "homepage": "https://github.com/tawan475/bancho.js#readme",
+  "dependencies": {
+    "eventemitter3": "^4.0.7"
+  }
 }
