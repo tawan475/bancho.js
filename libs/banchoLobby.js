@@ -1,4 +1,5 @@
 const EventEmitter = require('eventemitter3');
+// const banchoRegex = require('../libs/banchoRegex.js');
 
 module.exports = class banchoLobby extends EventEmitter {
     // Constructor
@@ -12,17 +13,21 @@ module.exports = class banchoLobby extends EventEmitter {
         // make sure that channel start with '#'
         if (!name.startsWith('#')) name = '#' + name;
         this._name = name;
-        this._users = [];
+        this._users = []; // users connected to IRC
+        this._players = new Array(16).fill(null); // players in this match
         this._isMultiplayer = false;
-        if (this._name.startsWith("#mp_")){
+        if (this._name.startsWith("#mp_")) {
             this._isMultiplayer = true;
-            this._matchId = parseInt(this._name.substring(4))
+            this._matchId = parseInt(this._name.substring(4));
+            this._updateSettings();
         }
 
         // Add event listeners
+        // Handle raw messages
         this._nameBuffer = '';
-        this.client.on("_message", (message) => {
+        this.client.on("message", (message) => {
             if (!message.raw.includes(this._name)) return;
+
             // Multiplayer Id
             if (message.type === '332') {
                 if (!this._isMultiplayer) return;
@@ -49,10 +54,25 @@ module.exports = class banchoLobby extends EventEmitter {
                 this._users = users;
                 return this.emit('users', users);
             }
-        })
+        });
+
+        // Handle multiplayer chat
+        this.client.on("multiplayer", (message) => {
+            if (message.destination !== this._name) return;
+            // check for !mp settings result
+            if (message.author === 'BanchoBot') {
+                // let regex = banchoRegex.find(regex => regex.test(message.content));
+                // if (!regex) return; // Not what we are looking for
+            }
+        });
     }
 
     // Methods
+    // Update settings
+    _updateSettings() {
+        this.send("!mp settings " + this.client.random);
+    }
+
     // Send message to this channel
     send(message) {
         return this.client.send(this._name, message);
@@ -86,5 +106,13 @@ module.exports = class banchoLobby extends EventEmitter {
     // Get user list
     get users() {
         return this._users;
+    }
+
+    // Get player list
+    get players() {
+        if (!this._players.length) return this._players;
+        return new Promise((resolve, reject) => {
+            this.once('_playersUpdated', (players) => resolve(players));
+        });
     }
 }
