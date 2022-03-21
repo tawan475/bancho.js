@@ -1,7 +1,7 @@
 const EventEmitter = require('eventemitter3');
 const { Socket } = require('net');
 
-const banchoLobby = require('../lib/banchoLobby.js');
+const banchoLobby = require('../libs/banchoLobby.js');
 
 module.exports = class banchoClient extends EventEmitter {
     // Constructor
