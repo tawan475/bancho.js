@@ -44,9 +44,10 @@ module.exports = class banchoClient extends EventEmitter {
 
         // Actually sending message
         this._send = (message) => {
-            if (!message || message.startsWith("PONG ")) return;
+            if (!message) return;
 
             this._socket.write(message);
+            if (message.startsWith("PONG ")) return
             console.debug(">" + message);
         }
 
