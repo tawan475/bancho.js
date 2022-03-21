@@ -1,6 +1,8 @@
 const EventEmitter = require('eventemitter3');
 const { Socket } = require('net');
 
+const banchoLobby = require('../lib/banchoLobby.js');
+
 module.exports = class banchoClient extends EventEmitter {
     // Constructor
     constructor(config = {
@@ -32,6 +34,9 @@ module.exports = class banchoClient extends EventEmitter {
             // acknowledge the message
             messageObj.resolve();
         }
+
+        // Create joined channel map
+        this._channels = new Map();
 
         // Create socket
         this._socket = new Socket();
@@ -98,7 +103,7 @@ module.exports = class banchoClient extends EventEmitter {
 
                 if (message.type === 'QUIT') continue;
                 if (message.source === 'PING') {
-                    this.send('PONG ' + segment.slice(1).join(' '));
+                    this._sendMessage('PONG ' + segment.slice(1).join(' '));
                     continue;
                 }
 
@@ -117,46 +122,60 @@ module.exports = class banchoClient extends EventEmitter {
 
                 if (message.type === 'JOIN') {
                     message.author = message.source.substring(1, message.source.indexOf('!'));
-                    message.channel = message.args[0].substring(1);
-                    this.emit('lobbyJoined', message);
+                    message.destination = message.args[0].substring(1);
+                    this._channels.set(message.destination, new banchoLobby(this, message.destination));
+                    message.channel = this._channels.get(message.destination);
+
+                    this.emit('lobbyJoin', message);
                     continue;
                 }
 
                 if (message.type === 'PRIVMSG') {
                     // Handle private messages
                     message.author = message.source.substring(1, message.source.indexOf('!'));
-                    message.channel = message.args.shift();
-                    // remove the first ":"
+                    message.destination = message.args.shift();
+                    // Remove the first ":"
                     message.args[0] = message.args[0].substring(1);
                     message.content = message.args.join(' ');
-                    if (message.channel === this._username) {
+
+                    // Get channel object
+                    if (!this._channels.has(message.destination)) {
+                        this._channels.set(message.destination, new banchoLobby(this, message.destination));
+                    }
+                    message.channel = this._channels.get(message.destination);
+
+                    // If the message is coming to our username
+                    // It is a private message
+                    if (message.channel.name === this._username) {
                         this.emit('pm', message);
                         continue;
                     }
 
-                    // we are only allowed to mesage to game lobby, spectator and private Message
-                    // ignore all other channels
-                    if (message.channel.startsWith("#mp_")) {
+                    // We are only allowed to mesage to game lobby, spectator and private Message
+                    // Ignore all other channels
+                    if (message.channel.name.startsWith("#mp_")) {
                         this.emit('multiplayer', message);
                         continue
                     }
 
-                    if (message.channel.startsWith("#spectator")) {
+                    if (message.channel.name === "#spectator") {
                         this.emit('spectator', message);
                         continue
                     }
                     continue;
                 }
 
-                // example
+                // Example
                 //   author   type   args ----
                 // :cho.ppy.sh 403 tawan475 #mp_98943277 :No such channel #mp_98943277
                 if (message.type === '403') {
                     message.args.shift(); // our name, this._username
-                    message.channel = message.args.shift();
-                    // remove the first ":"
+                    message.destination = message.args.shift();
+                    // Remove the first ":"
                     message.args[0] = message.args[0].substring(1);
-                    this.emit('lobbyJoined', message.channel, new Error("No such channel."));
+                    // Delete the channel from the map if it exist
+                    if (this._channels.has(message.destination)) this._channels.delete(message.destination);
+                    this.emit('lobbyLeave', message.destination, new Error("No such channel."));
                     continue;
                 }
 
@@ -199,14 +218,15 @@ module.exports = class banchoClient extends EventEmitter {
     }
 
     // Send a message to a channel
-    say(channel, message) {
+    send(channel, message) {
         if (!channel) throw new Error("Channel is required.");
         if (!message) throw new Error("Message is required.");
-        this.send(`PRIVMSG ${channel} :${message}`);
+        return this._sendMessage(`PRIVMSG ${channel} :${message}`);
     }
 
-    // Add a message to the queue
-    send(message) {
+    // Add a message to the queue,
+    // DO NOT USE THIS UNLESS YOU KNOW WHAT ARE YOU DOING.
+    _sendMessage(message) {
         return new Promise((resolve, reject) => {
             // // not needed due to the message processor only process message when it is connected and ready
             // if (!this._socket || this._socket.readyState !== 'open') {
@@ -223,12 +243,18 @@ module.exports = class banchoClient extends EventEmitter {
 
     // Send a private message to a user
     pm(user, message) {
-        return this.send(`PRIVMSG ${user} :${message}`);
+        return this._sendMessage(`PRIVMSG ${user} :${message}`);
     }
 
-    // Join a lobby
+    // Join the channel
     join(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
-        return this.send(`JOIN ${channel}`);
+        return this._sendMessage(`JOIN ${channel}`);
+    }
+
+    // Leave the channel
+    leave(channel) {
+        if (!channel.startsWith('#')) channel = '#' + channel;
+        return this._sendMessage(`PART ${channel}`);
     }
 }
