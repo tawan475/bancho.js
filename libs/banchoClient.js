@@ -93,6 +93,7 @@ module.exports = class banchoClient extends EventEmitter {
                     raw: line
                 };
 
+                // Refer to https://datatracker.ietf.org/doc/html/rfc2812#section-5
                 // 332 multiplayer id
                 // 333 unix server time
                 // 353 prob userlist
@@ -127,7 +128,7 @@ module.exports = class banchoClient extends EventEmitter {
                     this._channels.set(message.destination, new banchoLobby(this, message.destination));
                     message.channel = this._channels.get(message.destination);
 
-                    this.emit('lobbyJoin', message);
+                    this.emit('channelJoin', message);
                     continue;
                 }
 
@@ -136,7 +137,7 @@ module.exports = class banchoClient extends EventEmitter {
                     message.destination = message.args[0].substring(1);
                     if (this._channels.has(message.destination)) this._channels.delete(message.destination);
 
-                    this.emit('lobbyLeave', message.destination);
+                    this.emit('channelLeave', message.destination);
                     continue;
                 }
 
@@ -185,7 +186,7 @@ module.exports = class banchoClient extends EventEmitter {
                     message.args[0] = message.args[0].substring(1);
                     // Delete the channel from the map if it exist
                     if (this._channels.has(message.destination)) this._channels.delete(message.destination);
-                    this.emit('lobbyLeave', message.destination, new Error("No such channel."));
+                    this.emit('channelLeave', message.destination, new Error("No such channel."));
                     continue;
                 }
 

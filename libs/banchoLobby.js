@@ -12,6 +12,11 @@ module.exports = class banchoLobby extends EventEmitter {
         // make sure that channel start with '#'
         if (!name.startsWith('#')) name = '#' + name;
         this._name = name;
+        this._isMultiplayer = false;
+        if (this._name.startsWith("#mp_")){
+            this._isMultiplayer = true;
+            this._matchId = parseInt(this._name.substring(4))
+        }
     }
 
     // Methods
