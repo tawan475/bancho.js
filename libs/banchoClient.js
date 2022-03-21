@@ -37,7 +37,11 @@ module.exports = class banchoClient extends EventEmitter {
 
         // Create joined channel map
         this._channels = new Map();
-        
+
+        // Create socket
+        this._socket = new Socket();
+        this._socket.setMaxListeners(0);
+
         // Actually sending message
         this._send = (message) => {
             if (!message) return;
@@ -45,16 +49,6 @@ module.exports = class banchoClient extends EventEmitter {
             this._socket.write(message);
             this.emit("sendMessage", message);
         }
-
-    }
-
-    // Connect & login to the server
-    // remove from constructor to void and not save the credentials
-    // improve security
-    login({ username, password }) {
-        // Create socket
-        this._socket = new Socket();
-        this._socket.setMaxListeners(0);
 
         // Configure socket
         this._socket.setEncoding('utf8');
@@ -118,7 +112,7 @@ module.exports = class banchoClient extends EventEmitter {
                 // 376 end of motd
                 // 403 no such channel
                 // 464 bad auth
-
+                
 
                 if (message.type === 'QUIT') continue;
                 if (message.source === 'PING') {
@@ -225,7 +219,12 @@ module.exports = class banchoClient extends EventEmitter {
             // Terminate the message processor
             clearInterval(this._messageProcessor);
         });
+    }
 
+    // Connect & login to the server
+    // remove from constructor to void and not save the credentials
+    // improve security
+    login({ username, password }) {
         this._username = username;
         this._socket.connect(this._server, () => {
             this._socket.write(`PASS ${password}` + "\r\n");
@@ -263,6 +262,11 @@ module.exports = class banchoClient extends EventEmitter {
         });
     }
 
+    // Send a private message to a user
+    pm(user, message) {
+        return this._sendMessage(`PRIVMSG ${user} :${message}`);
+    }
+
     // Join the channel
     join(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
@@ -273,5 +277,10 @@ module.exports = class banchoClient extends EventEmitter {
     leave(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
         return this._sendMessage(`PART ${channel}`);
+    }
+
+    // Random characters for anti-spam
+    get random() {
+        return Math.random().toString(36).substring(2);
     }
 }
