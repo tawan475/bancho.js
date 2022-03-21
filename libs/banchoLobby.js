@@ -11,18 +11,18 @@ module.exports = class banchoLobby extends EventEmitter {
 
         // make sure that channel start with '#'
         if (!name.startsWith('#')) name = '#' + name;
-        this.name = name;
+        this._name = name;
     }
 
     // Methods
     // Send message to this channel
     send(message) {
-        return this.client.send(this.name, message);
+        return this.client.send(this._name, message);
     }
 
     // Leave channel
     leave() {
-        return this.client.leave(this.name);
+        return this.client.leave(this._name);
     }
 
     // Define getters
