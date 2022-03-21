@@ -47,8 +47,7 @@ module.exports = class banchoClient extends EventEmitter {
             if (!message) return;
 
             this._socket.write(message);
-            if (message.startsWith("PONG ")) return
-            console.debug(">" + message);
+            this.emit("sendMessage", message);
         }
 
         // Configure socket
@@ -93,6 +92,17 @@ module.exports = class banchoClient extends EventEmitter {
                     raw: line
                 };
 
+                // Examples
+                // source               type    args...
+                // :cho.ppy.sh          001     tawan475 :Welcome to the osu!Bancho.
+                // :tawan475!cho@ppy.sh PRIVMSG #mp_98953873 :a
+                // :cho.ppy.sh          333     tawan475 #mp_98953873 BanchoBot!BanchoBot@cho.ppy.sh 1647835975
+
+                // Unfiltered message
+                // Internally comunicate with every banchoLobby class
+                // If you was thinking of using this, use "message" for filtered message
+                this.emit("_message", message)
+
                 // Refer to https://datatracker.ietf.org/doc/html/rfc2812#section-5
                 // 332 multiplayer id
                 // 333 unix server time
@@ -102,6 +112,7 @@ module.exports = class banchoClient extends EventEmitter {
                 // 376 end of motd
                 // 403 no such channel
                 // 464 bad auth
+                
 
                 if (message.type === 'QUIT') continue;
                 if (message.source === 'PING') {
@@ -117,7 +128,6 @@ module.exports = class banchoClient extends EventEmitter {
                 if (message.type === '001') {
                     // Connected and logged in to the server
                     this.emit('ready');
-
                     // Activate message processor
                     this._messageProcessorInterval = setInterval(this._messageProcessor, this._config.messageDelay);
                 }
@@ -190,7 +200,7 @@ module.exports = class banchoClient extends EventEmitter {
                     continue;
                 }
 
-                this.emit('message', message)
+                this.emit('message', message);
             }
         });
 
