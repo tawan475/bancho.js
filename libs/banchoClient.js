@@ -130,6 +130,15 @@ module.exports = class banchoClient extends EventEmitter {
                     continue;
                 }
 
+                if (message.type === 'PART') {
+                    message.author = message.source.substring(1, message.source.indexOf('!'));
+                    message.destination = message.args[0].substring(1);
+                    if (this._channels.has(message.destination)) this._channels.delete(message.destination);
+
+                    this.emit('lobbyLeave', message.destination);
+                    continue;
+                }
+
                 if (message.type === 'PRIVMSG') {
                     // Handle private messages
                     message.author = message.source.substring(1, message.source.indexOf('!'));
