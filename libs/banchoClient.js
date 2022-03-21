@@ -263,11 +263,6 @@ module.exports = class banchoClient extends EventEmitter {
         });
     }
 
-    // Send a private message to a user
-    pm(user, message) {
-        return this._sendMessage(`PRIVMSG ${user} :${message}`);
-    }
-
     // Join the channel
     join(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
