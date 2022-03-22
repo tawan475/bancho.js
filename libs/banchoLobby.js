@@ -1,5 +1,5 @@
 const EventEmitter = require('eventemitter3');
-// const banchoRegex = require('../libs/banchoRegex.js');
+const banchoRegex = require('../libs/banchoRegex.js');
 
 module.exports = class banchoLobby extends EventEmitter {
     // Constructor
@@ -14,8 +14,8 @@ module.exports = class banchoLobby extends EventEmitter {
         if (!name.startsWith('#')) name = '#' + name;
         this._name = name;
         this._users = []; // users connected to IRC
-        this._matchSize = 16 
-        this._players = new Array(this._matchSize).fill(null); // players in this match
+        this._matchSize = 16
+        this._players = new Array(16).fill(null); // players in this match
         this._isMultiplayer = false;
         if (this._name.startsWith("#mp_")) {
             this._isMultiplayer = true;
@@ -65,12 +65,15 @@ module.exports = class banchoLobby extends EventEmitter {
 
             // End of user list
             if (message.type === '366') {
-                let users = this._nameBuffer.split(' ');
+                let users = this._nameBuffer.trim().split(' ');
                 this._users = users;
+                this._nameBuffer = '';
                 return this.emit('users', users);
             }
         });
 
+        // Count how many players have we processed
+        this._playersProcessed = 0;
         // Handle multiplayer chat
         this.client.on("multiplayer", (message) => {
             if (message.destination !== this._name) return;
@@ -78,6 +81,7 @@ module.exports = class banchoLobby extends EventEmitter {
             if (message.author === 'BanchoBot') {
                 let regex = banchoRegex.match(message.content);
                 if (!regex) return; // Not what we are looking for
+                let player;
                 switch (regex.name) {
                     case "roomTitle":
                         this.emit('roomTitle', regex.result);
@@ -113,8 +117,9 @@ module.exports = class banchoLobby extends EventEmitter {
                         break;
                     case "playerChangedTeam":
                         this.emit('playerChangedTeam', regex.result);
-                        slot = this.getPlayerByName(regex.result.name);
-                        this._players[slot].team = regex.result.team;
+                        player = this.getPlayerByName(regex.result.username);
+                        if (!player) return;
+                        this._players[player.slot].team = regex.result.team;
                         break;
                     case "refereeChangedBeatmap":
                         this.emit('refereeChangedBeatmap', regex.result);
@@ -149,28 +154,40 @@ module.exports = class banchoLobby extends EventEmitter {
                         break;
                     case "playerJoined":
                         this.emit('playerJoined', regex.result);
-                        this._players[regex.result.slot] = {
+                        playerObj = {
                             slot: regex.result.slot,
-                            name: regex.result.username,
+                            username: regex.result.username,
                             team: regex.result.team,
                         }
-
+                        if (this._players[regex.result.slot]) {
+                            Object.assign(this._players[regex.result.slot], playerObj);
+                        } else {
+                            this._players[regex.result.slot] = playerObj;
+                        }
                         break;
                     case "playerMoved":
                         this.emit('playerMoved', regex.result);
                         let newSlot = regex.result.slot;
                         let oldSlot = this.getPlayerByName(regex.result.username);
-                        this._players[newSlot] = {
-                            slot: newSlot,
-                            name: regex.result.username,
-                            team: this._players[oldSlot].team,
+                        if (oldSlot) {
+                            this._players[newSlot] = oldSlot.player;
+                            this._players[newSlot].slot = newSlot;
+                            this._players[oldSlot.slot] = null;
+                        } else {
+                            this._players[newSlot] = {
+                                slot: newSlot,
+                                userId: null,
+                                username: regex.result.username,
+                                ishost: null,
+                                team: null,
+                                mods: null
+                            }
                         }
-                        this._players[oldSlot] = null;
                         break;
                     case "playerLeft":
                         this.emit('playerLeft', regex.result.username);
-                        slot = this.getPlayerByName(regex.result.username);
-                        this._players[slot] = null;
+                        player = this.getPlayerByName(regex.result.username);
+                        if (player) this._players[player.slot] = null;
                         break;
                     case "playerBecameTheHost":
                         this.emit('playerBecameTheHost', regex.result.username);
@@ -179,8 +196,8 @@ module.exports = class banchoLobby extends EventEmitter {
                         oldHost.isHost = false;
 
                         this._host = regex.result.username;
-                        slot = this.getPlayerByName(regex.result.username);
-                        this._players[slot].isHost = true;
+                        player = this.getPlayerByName(regex.result.username);
+                        if (player) this._players[player.slot].isHost = true;
                         break;
                     case "allPlayersReady":
                         this.emit('allPlayersReady');
@@ -226,17 +243,49 @@ module.exports = class banchoLobby extends EventEmitter {
                     case "matchSize":
                         this.emit('matchSize', regex.result.matchSize);
                         this._matchSize = regex.result.matchSize;
-                        this._players = [ ...this._players, ...Array(Math.max(this.matchSize - arr.length, 0)).fill(null)];
                         break;
                     case "matchSettings":
                         this.emit('matchSettings', regex.result);
                         this.matchSize = regex.result.size;
-                        this._players = [ ...this._players, ...Array(Math.max(this.matchSize - arr.length, 0)).fill(null)];
                         this._teamMode = regex.result.teamMode;
                         this._winCondition = regex.result.winCondition;
                         break;
                     case "hostCleared":
                         this.emit('hostCleared');
+                        break;
+                    case "settingsPlayerData":
+                        this.emit('settingsPlayerData', regex.result);
+                        let attribute = regex.result.attribute.split("/ ");
+                        let isHost = false;
+                        let team = null;
+                        let mods = [];
+                        if (attribute[0] === "host") {
+                            isHost = true;
+                            attribute.shift();
+                        }
+                        if (attribute[0].startsWith("Team ")) {
+                            team = attribute[0].split(" ")[1].toLowerCase();
+                            attribute.shift();
+                        }
+                        if (attribute[0]) {
+                            mods = attribute[0].split(", ");
+                            attribute.shift();
+                        }
+
+                        let playerObj = {
+                            slot: regex.result.slot,
+                            userId: regex.result.userId,
+                            username: regex.result.username,
+                            ishost: isHost,
+                            team: team,
+                            mods: mods
+                        }
+
+                        if (this._players[regex.result.slot]) {
+                            Object.assign(this._players[regex.result.slot], playerObj);
+                        } else {
+                            this._players[regex.result.slot] = playerObj;
+                        }
                         break;
                     default:
                         break;
@@ -262,9 +311,9 @@ module.exports = class banchoLobby extends EventEmitter {
     }
 
     // Get player by name
-    getPlayerByName(name) {
+    getPlayerByName(username) {
         if (!this._isMultiplayer) return null;
-        let slot = this._players.findIndex(player => player.name === name);
+        let slot = this._players.findIndex(player => player?.username === username);
         if (slot === -1) return false;
         return {
             slot: slot,
@@ -308,7 +357,7 @@ module.exports = class banchoLobby extends EventEmitter {
     // Get host
     get host() {
         if (!this._isMultiplayer) return null;
-        let slot = this._players.findIndex(player => player.isHost === true);
+        let slot = this._players.findIndex(player => player?.isHost === true);
         if (slot === -1) return false;
         return {
             slot: slot,
