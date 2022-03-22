@@ -1,33 +1,34 @@
 module.exports = {
-    find: function (string) {
+    match: function (string) {
         for (let regexName in this.regexes) {
             if (this.regexes[regexName].regex.test(string)) {
                 let found = this.regexes[regexName]
                 return {
                     name: regexName,
                     regex: found.regex,
-                    match: found.exec(found.regex, string)
+                    result: found.exec(found.regex, string)
                 }
             }
         }
+        return null;
     },
     regexes: {
-        roomName: {
+        roomTitle: {
             regex: /^Room name: (.+), History: https:\/\/osu\.ppy\.sh\/mp\/(\d+)$/,
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    name: match[1],
+                    title: match[1],
                     id: match[2]
                 }
             }
         },
-        refereeChangedName: {
+        refereeChangedTitle: {
             regex: /^Room name updated to "(.+)"$/,
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    name: match[1],
+                    title: match[1],
                 }
             }
         },
@@ -77,7 +78,7 @@ module.exports = {
                 let match = regex.exec(string);
                 return {
                     username: match[1],
-                    team: match[2]
+                    team: match[2].toLowerCase()
                 }
             }
         },
@@ -86,7 +87,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    id: match[1],
+                    beatmapId: match[1],
                     mapName: match[2]
                 }
             }
@@ -105,7 +106,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    id: match[1],
+                    beatmapId: match[1],
                     mapName: match[2]
                 }
             }
@@ -287,7 +288,7 @@ module.exports = {
                 return {
                     size: parseInt(match[2]),
                     teamMode: match[3],
-                    scoring: match[5]
+                    winCondition: match[5]
                 }
             }
         },
