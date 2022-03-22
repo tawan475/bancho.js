@@ -156,14 +156,14 @@ module.exports = class banchoLobby extends EventEmitter {
                         this.emit('playerJoined', regex.result);
                         playerObj = {
                             slot: regex.result.slot,
+                            userId: null,
                             username: regex.result.username,
+                            ishost: null,
                             team: regex.result.team,
+                            mods: null
                         }
-                        if (this._players[regex.result.slot]) {
-                            Object.assign(this._players[regex.result.slot], playerObj);
-                        } else {
-                            this._players[regex.result.slot] = playerObj;
-                        }
+                        this._players[regex.result.slot] = playerObj;
+                        this._playersAmount += 1;
                         break;
                     case "playerMoved":
                         this.emit('playerMoved', regex.result);
@@ -188,6 +188,7 @@ module.exports = class banchoLobby extends EventEmitter {
                         this.emit('playerLeft', regex.result.username);
                         player = this.getPlayerByName(regex.result.username);
                         if (player) this._players[player.slot] = null;
+                        this._playersAmount -= 1;
                         break;
                     case "playerBecameTheHost":
                         this.emit('playerBecameTheHost', regex.result.username);
@@ -255,6 +256,7 @@ module.exports = class banchoLobby extends EventEmitter {
                         break;
                     case "settingsPlayerData":
                         this.emit('settingsPlayerData', regex.result);
+                        this._playersProcessed += 1;
                         let attribute = regex.result.attribute.split("/ ");
                         let isHost = false;
                         let team = null;
@@ -285,6 +287,10 @@ module.exports = class banchoLobby extends EventEmitter {
                             Object.assign(this._players[regex.result.slot], playerObj);
                         } else {
                             this._players[regex.result.slot] = playerObj;
+                        }
+                        if (this._playersProcessed === this._playersAmount) {
+                            this._playersProcessed = 0;
+                            this.emit('_playersUpdated');
                         }
                         break;
                     default:
@@ -348,10 +354,15 @@ module.exports = class banchoLobby extends EventEmitter {
 
     // Get player list
     get players() {
-        if (!this._players.length) return this._players;
-        return new Promise((resolve, reject) => {
-            this.once('_playersUpdated', (players) => resolve(players));
-        });
+        if (this._playersAmount === 0) return [];
+        if (!this._playersAmount ||
+            this._players.filter((player) => player).length !== this._playersAmount) {
+            return new Promise((resolve, reject) => {
+                this._updateSettings();
+                this.once('_playersUpdated', () => resolve(this._players));
+            });
+        }
+        return this._players.filter((player) => player);
     }
 
     // Get host
