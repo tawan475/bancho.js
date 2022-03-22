@@ -4,7 +4,7 @@ module.exports = {
             if (this.regexes[regexName].regex.test(string)) {
                 let found = this.regexes[regexName]
                 return {
-                    name: regexName,
+                    username: regexName,
                     regex: found.regex,
                     result: found.exec(found.regex, string)
                 }
@@ -147,7 +147,7 @@ module.exports = {
                 let match = regex.exec(string);
                 return {
                     username: match[1],
-                    slot: parseInt(match[2]),
+                    slot: parseInt(match[2]) - 1,
                     team: match[4] ? match[4] ===  "blue" ? "blue" : "red" : null
                 }
             }
@@ -158,7 +158,7 @@ module.exports = {
                 let match = regex.exec(string);
                 return {
                     username: match[1],
-                    slot: parseInt(match[2])
+                    slot: parseInt(match[2]) - 1
                 }
             }
         },
@@ -289,6 +289,19 @@ module.exports = {
                     size: parseInt(match[2]),
                     teamMode: match[3],
                     winCondition: match[5]
+                }
+            }
+        },
+        settingsPlayerData: {
+            regex: /^Slot (\d+).+((Not Ready)|(Ready    )).+https:\/\/osu.ppy.sh\/u\/(\d+) (.+) \[(.+)\]$/,
+            exec: function (regex, string) {
+                let match = regex.exec(string);
+                return {
+                    slot: parseInt(match[1]) - 1,
+                    ready: match[2] === "Ready    ",
+                    userId: match[5],
+                    username: match[6],
+                    attribute: match[7],
                 }
             }
         },
