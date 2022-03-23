@@ -276,6 +276,20 @@ module.exports = class banchoClient extends EventEmitter {
         return this._sendMessage(`PRIVMSG ${user} :${message}`);
     }
 
+    // Create Multiplayer lobby
+    createMultiplayer(name){
+        return new Promise((resolve, reject) => {
+            this.pm("BanchoBot", `!mp make ${name}`);
+            const listener = (channel) => {
+                if (channel.title === name) {
+                    resolve(channel);
+                }
+                this.removeListener(`_MP_ACKNOWLEDGED-${name}`, listener);
+            }
+            this.on(`_MP_ACKNOWLEDGED-${name}`, listener);
+        });
+    }
+
     // Join the channel
     join(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;

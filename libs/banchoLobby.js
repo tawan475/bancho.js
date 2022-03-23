@@ -105,6 +105,7 @@ module.exports = class banchoLobby extends EventEmitter {
                     case "playersAmount":
                         this.emit('playersAmount', regex.result.playersAmount);
                         this._playersAmount = regex.result.playersAmount;
+                        if (this._playersAmount === 0) this.client.emit(`_MP_ACKNOWLEDGED-${this.title}`, this);
                         break;
                     case "playerChangedBeatmap":
                         this.emit('playerChangedBeatmap', regex.result);
@@ -288,6 +289,7 @@ module.exports = class banchoLobby extends EventEmitter {
                         }
                         if (this._playersProcessed === this._playersAmount) {
                             this._playersProcessed = 0;
+                            this.client.emit(`_MP_ACKNOWLEDGED-${this.title}`, this);
                             this.emit('_playersUpdated');
                         }
                         break;
@@ -329,6 +331,11 @@ module.exports = class banchoLobby extends EventEmitter {
     // get channel name
     get name() {
         return this._name;
+    }
+
+    // get channel title
+    get title() {
+        return this._title;
     }
 
     get isMultiplayer() {
