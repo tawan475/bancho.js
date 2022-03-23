@@ -10,16 +10,14 @@ module.exports = class banchoLobby extends EventEmitter {
         // so that we could use it's methods internally
         this.client = bancoClient;
 
-        // make sure that channel start with '#'
-        if (!name.startsWith('#')) name = '#' + name;
-        this.name = name;
+        this._name = name;
         this._users = []; // users connected to IRC
-        this._matchSize = 16
-        this._players = new Array(16).fill(null); // players in this match
         this._isMultiplayer = false;
-        if (this.name.startsWith("#mp_")) {
+        if (this._name.startsWith("#mp_")) {
+            this._matchSize = 16
+            this._players = new Array(16).fill(null); // players in this match
             this._isMultiplayer = true;
-            this._matchId = parseInt(this.name.substring(4));
+            this._matchId = parseInt(this._name.substring(4));
             this._teamMode = null;
             this._winCondition = null;
             this._mods = {
@@ -41,7 +39,7 @@ module.exports = class banchoLobby extends EventEmitter {
         // Handle raw messages
         this._nameBuffer = '';
         this.client.on("message", (message) => {
-            if (!message.raw.includes(this.name)) return;
+            if (!message.raw.includes(this._name)) return;
 
             // Multiplayer Id
             if (message.type === '332') {
@@ -76,7 +74,7 @@ module.exports = class banchoLobby extends EventEmitter {
         this._playersProcessed = 0;
         // Handle multiplayer chat
         this.client.on("multiplayer", (message) => {
-            if (message.destination !== this.name) return;
+            if (message.destination !== this._name) return;
             // check for !mp settings result
             if (message.author === 'BanchoBot') {
                 let regex = banchoRegex.match(message.content);
@@ -308,12 +306,12 @@ module.exports = class banchoLobby extends EventEmitter {
 
     // Send message to this channel
     send(message) {
-        return this.client.send(this.name, message);
+        return this.client.send(this._name, message);
     }
 
     // Leave channel
     leave() {
-        return this.client.leave(this.name);
+        return this.client.leave(this._name);
     }
 
     // Get player by name
@@ -330,7 +328,7 @@ module.exports = class banchoLobby extends EventEmitter {
     // Define getters
     // get channel name
     get name() {
-        return this.name;
+        return this._name;
     }
 
     get isMultiplayer() {
