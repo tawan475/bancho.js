@@ -200,6 +200,15 @@ module.exports = class banchoClient extends EventEmitter {
                     continue;
                 }
 
+                if (message.type === '401') {
+                    message.args.shift(); // our name, this._username
+                    message.destination = message.args.shift();
+                    // Remove the first ":"
+                    message.args[0] = message.args[0].substring(1);
+                    this.emit('pm', message, new Error("No such nick."));
+                    continue;
+                }
+
                 this.emit('message', message);
             }
         });
