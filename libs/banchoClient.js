@@ -311,4 +311,8 @@ module.exports = class banchoClient extends EventEmitter {
     get random() {
         return Math.random().toString(36).substring(2);
     }
+
+    get username() {
+        return this._username;
+    }
 }
