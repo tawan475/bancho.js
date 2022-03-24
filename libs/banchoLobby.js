@@ -31,6 +31,7 @@ module.exports = class banchoLobby extends EventEmitter {
             }
             this._mode = null;
             this._referees = [];
+            this.isRef = false;
             this._updateSettings();
         }
         if (title) this._title = title;
@@ -44,7 +45,7 @@ module.exports = class banchoLobby extends EventEmitter {
             // Multiplayer Id
             if (message.type === '332') {
                 if (!this._isMultiplayer) return;
-                let multiplayerId = message.args[message.args.length - 1].substring(1);
+                let multiplayerId = parseInt(message.args[message.args.length - 1].substring(1))
                 return this._multiplayerId = multiplayerId;
             }
 
@@ -79,7 +80,7 @@ module.exports = class banchoLobby extends EventEmitter {
             if (message.author === 'BanchoBot') {
                 let regex = banchoRegex.match(message.content);
                 if (!regex) return; // Not what we are looking for
-                let player;
+                let player, playerObj;
                 switch (regex.name) {
                     case "roomTitle":
                         this.emit('roomTitle', regex.result);
@@ -223,10 +224,18 @@ module.exports = class banchoLobby extends EventEmitter {
                     case "refereeAdded":
                         this.emit('refereeAdded', regex.result.username);
                         this._referees.push(regex.result.username);
+                        if (regex.result.username === this.client.username) {
+                            this.isRef = true;
+                        }
+                        this.emit('refereeAdded', regex.result.username);
                         break;
                     case "refereeRemoved":
                         this.emit('refereeRemoved', regex.result.username);
                         this._referees.splice(this._referees.indexOf(regex.result.username), 1);
+                        if (regex.result.username === this.client.username) {
+                            this.isRef = false;
+                        }
+                        this.emit('refereeRemovedSelf', regex.result.username);
                         break;
                     case "userNotFound":
                         this.emit('userNotFound');
@@ -273,7 +282,7 @@ module.exports = class banchoLobby extends EventEmitter {
                             attribute.shift();
                         }
 
-                        let playerObj = {
+                        playerObj = {
                             slot: regex.result.slot,
                             userId: regex.result.userId,
                             username: regex.result.username,
@@ -350,6 +359,14 @@ module.exports = class banchoLobby extends EventEmitter {
     // Get multilpayer Id
     get multiplayerId() {
         return this._multiplayerId;
+    }
+
+    get isRef() {
+        return this._isRef;
+    }
+
+    get referees() {
+        return this._referees;
     }
 
     // Get user list
