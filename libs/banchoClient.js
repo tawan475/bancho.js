@@ -205,7 +205,7 @@ module.exports = class banchoClient extends EventEmitter {
                     message.destination = message.args.shift();
                     // Remove the first ":"
                     message.args[0] = message.args[0].substring(1);
-                    this.emit('pm', message, new Error("No such nick."));
+                    this.emit('pm', message.destination, new Error("No such nick."));
                     continue;
                 }
 
