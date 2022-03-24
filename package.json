@@ -1,6 +1,6 @@
 {
   "name": "@tawan475/bancho.js",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Interact with osu!'s IRC bancho",
   "main": "bancho.js",
   "scripts": {
