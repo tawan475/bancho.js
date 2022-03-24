@@ -287,7 +287,7 @@ module.exports = class banchoClient extends EventEmitter {
             const listener = (channel) => {
                 if (channel.title === name) {
                     resolve(channel);
-                    this.on("multiplayerCreated", channel)
+                    this.emit("multiplayerCreated", channel)
                 }
                 this.removeListener(`_MP_ACKNOWLEDGED-${name}`, listener);
             }
