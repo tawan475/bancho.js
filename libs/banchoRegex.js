@@ -306,11 +306,16 @@ module.exports = {
             }
         },
         hostCleared: {
-            regex: /Cleared match host/,
+            regex: /^Cleared match host$/,
             exec: function () {
                 return {}
             }
         },
-
+        listReferees: {
+            regex: /^Match referees:$/,
+            exec: function () {
+                return {}
+            }
+        },
     }
 }

@@ -32,6 +32,7 @@ module.exports = class banchoLobby extends EventEmitter {
             this._mode = null;
             this._referees = [];
             this.isRef = false;
+            this.waitingForSelfRef = false;
             this._updateSettings();
         }
         if (title) this._title = title;
@@ -70,6 +71,14 @@ module.exports = class banchoLobby extends EventEmitter {
                 return this.emit('users', users);
             }
         });
+
+        if (this.waitingForSelfRef) {
+            if (message.content === this.client.username[0].toUpperCase() + this.client.username.slice(1)){
+                this.waitingForSelfRef = false;
+                this.isRef = true;
+                if (!this._referees.includes(this.client.username)) this._referees.push(this.client.username);
+            }
+        }
 
         // Count how many players have we processed
         this._playersProcessed = 0;
@@ -301,6 +310,9 @@ module.exports = class banchoLobby extends EventEmitter {
                             this.client.emit(`_MP_ACKNOWLEDGED-${this.title}`, this);
                             this.emit('_playersUpdated');
                         }
+                        break;
+                    case "listReferees":
+                        this.waitingForSelfRef = true;
                         break;
                     default:
                         break;
