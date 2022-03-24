@@ -176,7 +176,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    username: match[1]
+                    username: match[1].trim()
                 }
             }
         },
@@ -203,7 +203,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    username: match[1],
+                    username: match[1].trim(),
                     score: parseInt(match[2]),
                     pass: match[3] === "PASS"
                 }
@@ -232,7 +232,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    username: match[1]
+                    username: match[1].trim()
                 }
             }
         },
@@ -241,7 +241,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    username: match[1]
+                    username: match[1].trim()
                 }
             }
         },
@@ -256,7 +256,7 @@ module.exports = {
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
-                    username: match[1]
+                    username: match[1].trim()
                 }
             }
         },
@@ -300,7 +300,7 @@ module.exports = {
                     slot: parseInt(match[1]) - 1,
                     ready: match[2] === "Ready    ",
                     userId: match[5],
-                    username: match[6],
+                    username: match[6].trim(),
                     attribute: match[7],
                 }
             }
