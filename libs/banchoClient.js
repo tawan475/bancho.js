@@ -277,6 +277,10 @@ module.exports = class banchoClient extends EventEmitter {
     }
 
     // Create Multiplayer lobby
+    // We want to create and let it join internally
+    // If we wait for "Created the tournament match" in BanchoBot's pm
+    // there might be an occasions where multiplayerId and stuff
+    // have not been fetch by "!mp settings" yet
     createMultiplayer(name){
         return new Promise((resolve, reject) => {
             this.pm("BanchoBot", `!mp make ${name}`);
