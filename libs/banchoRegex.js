@@ -4,7 +4,7 @@ module.exports = {
             if (this.regexes[regexName].regex.test(string)) {
                 let found = this.regexes[regexName]
                 return {
-                    username: regexName,
+                    name: regexName,
                     regex: found.regex,
                     result: found.exec(found.regex, string)
                 }
