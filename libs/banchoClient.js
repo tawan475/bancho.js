@@ -112,7 +112,7 @@ module.exports = class banchoClient extends EventEmitter {
                 // 376 end of motd
                 // 403 no such channel
                 // 464 bad auth
-                
+
 
                 if (message.type === 'QUIT') continue;
                 if (message.source === 'PING') {
@@ -281,7 +281,7 @@ module.exports = class banchoClient extends EventEmitter {
     // If we wait for "Created the tournament match" in BanchoBot's pm
     // there might be an occasions where multiplayerId and stuff
     // have not been fetch by "!mp settings" yet
-    createMultiplayer(name){
+    createMultiplayer(name) {
         return new Promise((resolve, reject) => {
             this.pm("BanchoBot", `!mp make ${name}`);
             const listener = (channel) => {
@@ -305,6 +305,12 @@ module.exports = class banchoClient extends EventEmitter {
     leave(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
         return this._sendMessage(`PART ${channel}`);
+    }
+
+    // get channel
+    getChannel(name) {
+        if (this._channels.has(name)) return this._channels.get(name);
+        return false;
     }
 
     // Random characters for anti-spam
