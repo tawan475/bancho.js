@@ -74,7 +74,7 @@ module.exports = class banchoLobby extends EventEmitter {
         });
 
         if (this.waitingForSelfRef) {
-            if (message.content === this.client.username[0].toUpperCase() + this.client.username.slice(1)){
+            if (message.content === this.client.username[0].toUpperCase() + this.client.username.slice(1)) {
                 this.waitingForSelfRef = false;
                 this.isRef = true;
                 if (!this._referees.includes(this.client.username)) this._referees.push(this.client.username);
@@ -353,6 +353,19 @@ module.exports = class banchoLobby extends EventEmitter {
         }
     }
 
+    // Get player list
+    getPlayers() {
+        if (this._playersAmount === 0) return [];
+        if (!this._playersAmount ||
+            this._players.filter((player) => player).length !== this._playersAmount) {
+            return new Promise((resolve, reject) => {
+                this._updateSettings();
+                this.once('_playersUpdated', () => resolve(this._players));
+            });
+        }
+        return this._players.filter((player) => player);
+    }
+
     // Define getters
     // get channel name
     get name() {
@@ -389,19 +402,6 @@ module.exports = class banchoLobby extends EventEmitter {
     // Get user list
     get users() {
         return this._users;
-    }
-
-    // Get player list
-    get players() {
-        if (this._playersAmount === 0) return [];
-        if (!this._playersAmount ||
-            this._players.filter((player) => player).length !== this._playersAmount) {
-            return new Promise((resolve, reject) => {
-                this._updateSettings();
-                this.once('_playersUpdated', () => resolve(this._players));
-            });
-        }
-        return this._players.filter((player) => player);
     }
 
     // Get host
