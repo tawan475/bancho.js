@@ -31,7 +31,7 @@ module.exports = class banchoLobby extends EventEmitter {
             }
             this._mode = null;
             this._referees = [];
-            this.isRef = false;
+            this._isRef = false;
             this.waitingForSelfRef = false;
             this._updateSettings();
             this._updateRefs();
@@ -76,7 +76,7 @@ module.exports = class banchoLobby extends EventEmitter {
         if (this.waitingForSelfRef) {
             if (message.content === this.client.username[0].toUpperCase() + this.client.username.slice(1)) {
                 this.waitingForSelfRef = false;
-                this.isRef = true;
+                this._isRef = true;
                 if (!this._referees.includes(this.client.username)) this._referees.push(this.client.username);
             }
         }
@@ -235,7 +235,7 @@ module.exports = class banchoLobby extends EventEmitter {
                         this.emit('refereeAdded', regex.result.username);
                         this._referees.push(regex.result.username);
                         if (regex.result.username === this.client.username) {
-                            this.isRef = true;
+                            this._isRef = true;
                         }
                         this.emit('refereeAdded', regex.result.username);
                         break;
@@ -243,7 +243,7 @@ module.exports = class banchoLobby extends EventEmitter {
                         this.emit('refereeRemoved', regex.result.username);
                         this._referees.splice(this._referees.indexOf(regex.result.username), 1);
                         if (regex.result.username === this.client.username) {
-                            this.isRef = false;
+                            this._isRef = false;
                         }
                         this.emit('refereeRemovedSelf', regex.result.username);
                         break;
