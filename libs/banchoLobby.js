@@ -34,6 +34,7 @@ module.exports = class banchoLobby extends EventEmitter {
             this.isRef = false;
             this.waitingForSelfRef = false;
             this._updateSettings();
+            this._updateRefs();
         }
         if (title) this._title = title;
 
@@ -325,6 +326,10 @@ module.exports = class banchoLobby extends EventEmitter {
     // Update settings
     _updateSettings() {
         this.send("!mp settings " + this.client.random);
+    }
+
+    _updateRefs() {
+        this.send("!mp listrefs " + this.client.random);
     }
 
     // Send message to this channel
