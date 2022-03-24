@@ -44,7 +44,7 @@ module.exports = class banchoLobby extends EventEmitter {
             // Multiplayer Id
             if (message.type === '332') {
                 if (!this._isMultiplayer) return;
-                let multiplayerId = parseInt(message.args[message.args.length - 1].substring(1))
+                let multiplayerId = message.args[message.args.length - 1].substring(1);
                 return this._multiplayerId = multiplayerId;
             }
 
