@@ -3,6 +3,13 @@ const banchoRegex = require('../libs/banchoRegex.js');
 
 module.exports = class banchoLobby extends EventEmitter {
     // Constructor
+    /**
+     * Creates an instance of banchoLobby.
+     * 
+     * @param {BanchoClient} bancoClient - Bancho client instance
+     * @param {String} name - Channel name
+     * @param {String} title - Channel title
+     */
     constructor(bancoClient, name, title) {
         super();
 
@@ -324,25 +331,50 @@ module.exports = class banchoLobby extends EventEmitter {
 
     // Methods
     // Update settings
+    /**
+     * Force the bot to update channel settings,
+     * For internal use
+     */
     _updateSettings() {
         this.send("!mp settings " + this.client.random);
     }
 
+    /**
+     * Force the bot to update list of referees,
+     * For internal use
+     */
     _updateRefs() {
         this.send("!mp listrefs " + this.client.random);
     }
 
     // Send message to this channel
+    /**
+     * Send a message to this channel
+     *
+     * @param {String} message - message to send
+     * @return A promise that resolves when the message is processed.
+     */
     send(message) {
         return this.client.send(this._name, message);
     }
 
     // Leave channel
+    /**
+     * Leave this channel
+     *
+     * @return A promise that resolves when the message is processed.
+     */
     leave() {
         return this.client.leave(this._name);
     }
 
     // Get player by name
+    /**
+     * Get player in the multiplayer by their username
+     *
+     * @param {String} username - username of the player
+     * @return Null if channel is not a multiplayer, or player object if found: { slot, playerObject }
+     */
     getPlayerByName(username) {
         if (!this._isMultiplayer) return null;
         let slot = this._players.findIndex(player => player?.username === username);
@@ -354,6 +386,10 @@ module.exports = class banchoLobby extends EventEmitter {
     }
 
     // Get player list
+    /**
+     * Get list of players
+     * @returns {Array} - Array of player objects
+     */
     getPlayers() {
         if (this._playersAmount === 0) return [];
         if (!this._playersAmount ||
@@ -368,11 +404,21 @@ module.exports = class banchoLobby extends EventEmitter {
 
     // Define getters
     // get channel name
+    /**
+     * Get channel name
+     *
+     * @readonly
+     */
     get name() {
         return this._name;
     }
 
     // get channel title
+    /**
+     * Get channel title
+     *
+     * @readonly
+     */
     get title() {
         return this._title;
     }
@@ -405,6 +451,11 @@ module.exports = class banchoLobby extends EventEmitter {
     }
 
     // Get host
+    /**
+     * Get host player in the multiplayer
+     *
+     * @return Null if channel is not a multiplayer, or player object if found: { slot, playerObject }
+     */
     get host() {
         if (!this._isMultiplayer) return null;
         let slot = this._players.findIndex(player => player?.isHost === true);
