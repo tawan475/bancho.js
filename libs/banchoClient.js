@@ -5,6 +5,15 @@ const banchoLobby = require('../libs/banchoLobby.js');
 
 module.exports = class banchoClient extends EventEmitter {
     // Constructor
+    /**
+     * Creates an instance of banchoClient.
+     * 
+     * @param {Object} config - Configuration object
+     * @param {String} config.host - The host of the bancho server
+     * @param {Number} config.port - The port of the bancho server
+     * @param {Number} config.messageDelay - The delay between each message sent
+     * @param {Number} config.messageSize - The maximum size of a message
+     */
     constructor(config = {
         host: 'irc.ppy.sh', port: 6667,
         messageDelay: 1000,
@@ -60,6 +69,7 @@ module.exports = class banchoClient extends EventEmitter {
 
         // Configure events
         // Handle error
+        
         this._socket.on('error', (err) => {
             this._socket.destroy();
             this.emit('error', err);
@@ -112,7 +122,6 @@ module.exports = class banchoClient extends EventEmitter {
                 // 376 end of motd
                 // 403 no such channel
                 // 464 bad auth
-
 
                 if (message.type === 'QUIT') continue;
                 if (message.source === 'PING') {
@@ -233,6 +242,13 @@ module.exports = class banchoClient extends EventEmitter {
     // Connect & login to the server
     // remove from constructor to void and not save the credentials
     // improve security
+    /**
+     * Login to to bancho server
+     * 
+     * @param {Object} config - Configuration object
+     * @param {String} config.username - Username
+     * @param {String} config.password - Password
+     */
     login({ username, password }) {
         this._username = username;
         this._socket.connect(this._server, () => {
@@ -243,11 +259,22 @@ module.exports = class banchoClient extends EventEmitter {
     }
 
     // Terminate the connection
+    /**
+     * Disconnect and Terminate the connection
+     * 
+     */
     disconnect() {
         this._socket.emit('close', false, "Terminate by user");
     }
 
     // Send a message to a channel
+    /**
+     * Send a message to a specific channel
+     * 
+     * @param {String} channel - Channel to send to
+     * @param {String} message - Message to send
+     * @returns A promise, Resolve when the message is processed.
+     */
     send(channel, message) {
         if (!channel) throw new Error("Channel is required.");
         if (!message) throw new Error("Message is required.");
@@ -272,8 +299,15 @@ module.exports = class banchoClient extends EventEmitter {
     }
 
     // Send a private message to a user
-    pm(user, message) {
-        return this._sendMessage(`PRIVMSG ${user} :${message}`);
+    /**
+     * Send a message to a specific user, same as BanchoClient.send()
+     * 
+     * @param {String} username - Username to send to
+     * @param {String} message - Message to send
+     * @returns A promise, Resolve when the message is processed.
+     */
+    pm(username, message) {
+        return this._sendMessage(`PRIVMSG ${username} :${message}`);
     }
 
     // Create Multiplayer lobby
@@ -281,6 +315,12 @@ module.exports = class banchoClient extends EventEmitter {
     // If we wait for "Created the tournament match" in BanchoBot's pm
     // there might be an occasions where multiplayerId and stuff
     // have not been fetch by "!mp settings" yet
+    /**
+     * Create a multiplayer lobby
+     * 
+     * @param {String} name - Name of the lobby
+     * @returns A promise, resolve with BanchoChannel when the channel is created.
+     */
     createMultiplayer(name) {
         return new Promise((resolve, reject) => {
             this.pm("BanchoBot", `!mp make ${name}`);
@@ -296,28 +336,56 @@ module.exports = class banchoClient extends EventEmitter {
     }
 
     // Join the channel
+    /**
+     * Join a channel
+     *
+     * @param {String} channel - Channel name to join
+     * @returns A promise, Resolve when the message is processed.
+     */
     join(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
         return this._sendMessage(`JOIN ${channel}`);
     }
 
     // Leave the channel
+    /**
+     * Leave a channel
+     *
+     * @param {String} channel - Channel name to leave
+     * @returns A promise, Resolve when the message is processed.
+     */
     leave(channel) {
         if (!channel.startsWith('#')) channel = '#' + channel;
         return this._sendMessage(`PART ${channel}`);
     }
 
     // get channel
+    /**
+     * Get a joined channel
+     * 
+     * @param {String} name - Channel name to get the channel object
+     * @returns A banchoLobby class, If the channel is not joined, return false.
+     */
     getChannel(name) {
         if (this._channels.has(name)) return this._channels.get(name);
         return false;
     }
 
     // Random characters for anti-spam
+    /**
+     * Get random string for anti-spam
+     *
+     * @readonly
+     */
     get random() {
         return Math.random().toString(36).substring(2);
     }
 
+    /**
+     * Get username of the bot
+     *
+     * @readonly
+     */
     get username() {
         return this._username;
     }
