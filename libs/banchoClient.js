@@ -318,20 +318,20 @@ module.exports = class banchoClient extends EventEmitter {
     /**
      * Create a multiplayer lobby
      * 
-     * @param {String} name - Name of the lobby
+     * @param {String} title - Name of the lobby
      * @returns A promise, resolve with BanchoChannel when the channel is created.
      */
-    createMultiplayer(name) {
+    createMultiplayer(title) {
         return new Promise((resolve, reject) => {
-            this.pm("BanchoBot", `!mp make ${name}`);
+            this.pm("BanchoBot", `!mp make ${title}`);
             const listener = (channel) => {
-                if (channel.title === name) {
+                if (channel.title === title) {
                     resolve(channel);
                     this.emit("multiplayerCreated", channel)
                 }
-                this.removeListener(`_MP_ACKNOWLEDGED-${name}`, listener);
+                this.removeListener(`_MP_ACKNOWLEDGED-${title}`, listener);
             }
-            this.on(`_MP_ACKNOWLEDGED-${name}`, listener);
+            this.on(`_MP_ACKNOWLEDGED-${title}`, listener);
         });
     }
 
