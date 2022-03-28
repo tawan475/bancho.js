@@ -1,5 +1,12 @@
 # bancho.js
  Interact with osu!'s IRC bancho
+<div>
+<p>
+<img src="https://img.shields.io/npm/v/@tawan475/bancho.js" />
+<img src="https://img.shields.io/npm/dt/@tawan475/bancho.js" />
+<img src="https://img.shields.io/librariesio/release/npm/@tawan475/bancho.js" />
+</p>
+</div>
  
 ## Installation
 ```sh-session
