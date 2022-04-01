@@ -293,15 +293,15 @@ module.exports = {
             }
         },
         settingsPlayerData: {
-            regex: /^Slot (\d+).+((Not Ready)|(Ready    )).+https:\/\/osu.ppy.sh\/u\/(\d+) (.+) \[(.+)\]$/,
+            regex: /^Slot (\d+) +((Not )?(Ready)) +https:\/\/osu.ppy.sh\/u\/(\d+) (.+) +(\[(.+)\])?$/,
             exec: function (regex, string) {
                 let match = regex.exec(string);
                 return {
                     slot: parseInt(match[1]) - 1,
-                    ready: match[2] === "Ready    ",
+                    ready: !match[2].startsWith("Not"),
                     userId: match[5],
                     username: match[6].trim(),
-                    attribute: match[7],
+                    attribute: match[8],
                 }
             }
         },
