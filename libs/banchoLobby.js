@@ -95,6 +95,14 @@ module.exports = class banchoLobby extends EventEmitter {
             if (message.destination !== this._name) return;
             // check for !mp settings result
             if (message.author === 'BanchoBot') {
+                if (message.content === "Closed the match") return this.emit('close');
+                if (this.waitingForSelfRef) {
+                    if (message.content === this.client.username[0].toUpperCase() + this.client.username.slice(1)) {
+                        this.waitingForSelfRef = false;
+                        this._isRef = true;
+                        if (!this._referees.includes(this.client.username)) this._referees.push(this.client.username);
+                    }
+                }
                 let regex = banchoRegex.match(message.content);
                 if (!regex) return; // Not what we are looking for
                 let player, playerObj;
@@ -391,7 +399,7 @@ module.exports = class banchoLobby extends EventEmitter {
      * @returns {Array} - Array of player objects
      */
     getPlayers() {
-        if (this._playersAmount === 0) return [];
+        if (this._playersAmount === 0) return  new Promise(resolve => resolve([]));
         if (!this._playersAmount ||
             this._players.filter((player) => player).length !== this._playersAmount) {
             return new Promise((resolve, reject) => {
@@ -399,7 +407,7 @@ module.exports = class banchoLobby extends EventEmitter {
                 this.once('_playersUpdated', () => resolve(this._players));
             });
         }
-        return this._players.filter((player) => player);
+        return new Promise(resolve => resolve(this._players.filter((player) => player)));
     }
 
     // Define getters

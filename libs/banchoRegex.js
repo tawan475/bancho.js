@@ -301,7 +301,7 @@ module.exports = {
                     ready: !match[2].startsWith("Not"),
                     userId: match[5],
                     username: match[6].trim(),
-                    attribute: match[8],
+                    attribute: match[8] || "",
                 }
             }
         },
